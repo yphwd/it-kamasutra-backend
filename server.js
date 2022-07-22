@@ -1,22 +1,48 @@
 const http = require('http');
+const fs = require('fs');
 
-let requestsCount = 0; 
 
-const server = http.createServer((request, response) => {
-	
+const delay = (ms) => {
+	return new Promise((resolve, reject) => {
+		try {
+			setTimeout(() => {
+				resolve();
+			}, ms)
+		} catch (err) {
+			reject(err);
+		};
+	});
+};
+
+const readFile = (path) => {
+	return new Promise((resolve, reject) => {
+
+		// Асинхронный колбэк для чтения файла
+
+		fs.readFile(path, (error, data) => {
+			if (error) reject(err)
+			else resolve(data);
+		});
+	});
+};
+
+const server = http.createServer(async (request, response) => {
+
 	switch (request.url) {
-		case '/students':
-			response.write('STUDENTS ');
+		case '/home':
+			const data = await readFile('pages/home.html');
+			response.write(data);
+			response.end();
+			break;
+		case '/about':
+			await delay(3000);
+			response.write('ABOUT');
+			response.end();
 			break;
 		default:
 			response.write('404 NOT FOUND ');
+			response.end();
 	};
-
-	if (request.url !== '/favicon.ico') {
-		requestsCount++;
-	};
-	response.write('Hello!' + ' Requests count: ' + requestsCount);
-	response.end();
 });
 
 server.listen(3003);
